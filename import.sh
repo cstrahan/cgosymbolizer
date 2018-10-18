@@ -5,7 +5,7 @@ set -eu
 rm -rf internal/*
 find . -type l -not -path './.git/*' -exec rm {} \;
 curl -sfSL https://github.com/gcc-mirror/gcc/archive/gcc-6_3_0-release.tar.gz | \
-  tar xzf - -C internal --strip-components=1 '*-release/'{libbacktrace/'*'.{c,h},include/{{ansidecl,filenames,hashtab}.h,dwarf2.{def,h}}}
+  tar xzf - -C internal --wildcards --strip-components=1 '*-release/'{libbacktrace/'*'.{c,h},include/{{ansidecl,filenames,hashtab}.h,dwarf2.{def,h}}}
 
 patch -p1 < build.patch
 
