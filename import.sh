@@ -4,7 +4,7 @@ set -eu
 
 rm -rf internal/*
 find . -type l -not -path './.git/*' -exec rm {} \;
-curl -sfSL https://github.com/gcc-mirror/gcc/archive/gcc-6_3_0-release.tar.gz | \
+curl -sfSL https://github.com/gcc-mirror/gcc/archive/gcc-8_2_0-release.tar.gz | \
   tar xzf - -C internal --wildcards --strip-components=1 '*-release/'{libbacktrace/'*'.{c,h},include/{{ansidecl,filenames,hashtab}.h,dwarf2.{def,h}}}
 
 patch -p1 < build.patch
@@ -12,10 +12,17 @@ patch -p1 < build.patch
 # symlink so cgo compiles them
 find internal -name '*.c' \
   -not -name btest.c \
-  -not -name stest.c \
+  -not -name edtest.c \
+  -not -name edtest2.c \
   -not -name mmap.c \
   -not -name mmapio.c \
   -not -name nounwind.c \
+  -not -name stest.c \
+  -not -name testlib.c \
+  -not -name testlib.h \
+  -not -name ttest.c \
+  -not -name xcoff.c \
+  -not -name ztest.c \
   -exec ln -vsf {} . \;
 
 # temporary hack so this can be used via gazelle
