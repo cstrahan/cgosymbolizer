@@ -16,6 +16,16 @@ find internal -name '*.c' \
   -not -name mmap.c \
   -not -name mmapio.c \
   -not -name nounwind.c \
-  -exec ln -sf {} . \;
+  -exec ln -vsf {} . \;
+
+# temporary hack so this can be used via gazelle
+# (gazelle and/or rules_go doesn't know to include headers as specified via #cgo CFLAGS: -I<path>)
+# https://github.com/bazelbuild/bazel-gazelle/issues/348
+find internal \( -name '*.h' -o -name '*.def' \) \
+  -exec ln -vsf {} . \;
+
+# additional hack for gazelle
+sed -i 's|"dwarf2\.def"|"dwarf2.def.h"|' dwarf2.h
+mv -v dwarf2.def{,.h}
 
 git clean -dXf
