@@ -8,6 +8,11 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <stdlib.h>
+#include <cxxabi.h>
+
+extern "C" {
+
 #include "backtrace.h"
 #include "internal.h"
 
@@ -50,7 +55,7 @@ static int callback(void* data, uintptr_t pc, const char* filename, int lineno, 
 		arg->func = function;
 		return 0;
 	}
-	more = backtrace_alloc(cgoBacktraceState, sizeof(*more), NULL, NULL);
+	more = (cgoSymbolizerMore*)backtrace_alloc(cgoBacktraceState, sizeof(*more), NULL, NULL);
 	if (more == NULL) {
 		return 1;
 	}
@@ -75,6 +80,12 @@ static void errorCallback(void* data, const char* msg, int errnum) {
 static void syminfoCallback(void* data, uintptr_t pc, const char* symname, uintptr_t symval, uintptr_t symsize) {
 	struct cgoSymbolizerArg* arg = (struct cgoSymbolizerArg*)(data);
 	arg->entry = symval;
+	int status;
+	arg->func = abi::__cxa_demangle(symname, NULL, NULL, &status);
+	if (arg->func == NULL) {
+		arg->func = (const char *)malloc(strlen(symname)+1);
+		strcpy((char*)arg->func, symname);
+	}
 }
 
 // For the details of how this is called see runtime.SetCgoTraceback.
@@ -96,6 +107,7 @@ void cgoSymbolizer(void* parg) {
 
 		return;
 	}
+	free((void*)arg->func);
 	arg->file = NULL;
 	arg->lineno = 0;
 	arg->func = NULL;
@@ -109,4 +121,6 @@ void cgoSymbolizer(void* parg) {
 	if (!arg->more) {
 		backtrace_syminfo(cgoBacktraceState, arg->pc, syminfoCallback, errorCallback, (void*)arg);
 	}
+}
+
 }
